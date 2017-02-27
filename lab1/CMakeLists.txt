@@ -12,5 +12,6 @@ set(GLUT_LIB ${GLUT_LIBRARY})
 
 # add chaos lib
 file(GLOB CHAOS_LIB "/home/bloodyangel/git_hub/ChaosAndFractal_Lib/lib/Release/*.a")
+
 target_link_libraries(lab1_kMean ${CHAOS_LIB} ${OpenCV_LIBS} ${GL_LIB} ${GLU_LIB} ${GLUT_LIB})
 target_include_directories(lab1_kMean PUBLIC "/home/bloodyangel/git_hub/ChaosAndFractal_Lib/include")

@@ -26,6 +26,8 @@ struct Point{
         if (x > rhs.x) return false;
         return y < rhs.y;
     }
+    bool operator==(const Point& rhs) const{ return x == rhs.x && y == rhs.y; }
+    bool operator!=(const Point& rhs) const{ return !(*this == rhs); }
 };
 
 struct Interface{
@@ -38,12 +40,41 @@ struct Interface{
 };
 
 
+static void updateWindow(cf::WindowCoordinateSystem& window, const std::map<Point, std::vector<Point>>& grouped){
+    window.clear();
+    const cf::Color colors[2*3] = {
+        cf::Color::CYAN, cf::Color::BLUE,
+        cf::Color::PINK, cf::Color::RED,
+        cf::Color::GREY, cf::Color::BLACK
+    };
+
+    size_t colorIdx = 0;
+    for (const auto& e : grouped){
+        if (colorIdx > sizeof(colors))
+            throw std::runtime_error("Out of range exception");
+
+        // visualize point
+        window.drawPoint(cf::Point(e.first.x, e.first.y), colors[colorIdx++], 3);
+        for (const auto& p : e.second)
+            window.drawPoint(cf::Point(p.x, p.y), colors[colorIdx]);
+        ++colorIdx;
+    }
+    window.show();
+    window.waitKey();
+}
+
+
 struct Cluster : public Interface{
+#ifdef CHAOS_LIB
+    cf::WindowCoordinateSystem* m_Window;
+    Cluster(cf::WindowCoordinateSystem* window = nullptr) : m_Window(window){}
+#endif
+
     ~Cluster() = default;
 
     double distance(const Point& instance, const Point& centroid) override { return (instance - centroid).length(); }
 
-    virtual Point centroid(const Point& /*oldCentroid*/, const std::vector<Point>& instances){
+    virtual Point centroid(const Point& /*oldCentroid*/, const std::vector<Point>& instances) override{
         Point mean(0, 0);
         for (const auto& point : instances)
             mean += point;
@@ -83,19 +114,28 @@ struct Cluster : public Interface{
             for (const auto& e : instances)
                 cluster[assign(e, centroids)].push_back(e);
 
+#ifdef CHAOS_LIB
+            // update visuals
+            if (this->m_Window)
+                updateWindow(*this->m_Window, cluster);
+#endif
+
             // calculate mean
             bool changed = false;
             for (auto& e : centroids){
                 const auto& points = cluster[e];
                 Point newCentroid = centroid(e, points);
-                newCluster[newCentroid] = std::vector<Point>();
+                if (newCentroid != e){
+                    e = newCentroid;
+                    changed = true;
+                }
             }
 
             // finished?
             if (!changed)
                 break;
 
-            cluster = std::move(newCluster);
+            cluster.clear();
         }
         return cluster;
     }
@@ -124,10 +164,22 @@ static std::vector<Point> readMarsFile(const char* filePath){
 
 int main(){
     const auto points = readMarsFile(FILE_PATH "Marsroboter-Weka.csv");
-    std::vector<Point> centroids = { Point(10, 10), Point(50, 50), Point(80, 50) };
 
-    Cluster cluster;
+    //std::vector<Point> centroids = { Point(10, 10), Point(50, 50), Point(80, 50) };
+    //std::vector<Point> centroids = { Point(10, 10), Point(20, 20), Point(30, 30) };
+    std::vector<Point> centroids = { Point(40, 50), Point(100, 50) };
+
+#ifdef CHAOS_LIB
+    cf::WindowCoordinateSystem window(600, {0, 120}, {0, 120});
+    Cluster cluster(&window);
     auto grouped = cluster.cluster(points, centroids);
+
+    // visual output
+    updateWindow(window, grouped);
+#else
+    Cluster cluster(&window);
+    auto grouped = cluster.cluster(points, centroids);
+#endif
 
     // text output
     std::cout << "Found centroids:\n\n";
@@ -138,20 +190,5 @@ int main(){
         std::cout << "\n\n\n";
     }
     std::cout << std::endl;
-
-    // visual output
-    cf::WindowCoordinateSystem window(600, {0, 200}, {0, 200});
-
-    const cf::Color colors[2*3] = {
-        cf::Color::BLUE, cf::Color::CYAN,
-        cf::Color::PINK, cf::Color::RED,
-        cf::Color::GREY, cf::Color::BLACK
-    };
-
-    size_t colorIdx = 0;
-    for (const auto& e : grouped){
-        // visualize point
-        window.drawPoint(cf::Point(e.first.x, e.first.y), colors[colorIdx++]);
-    }
 	return 0;
 }

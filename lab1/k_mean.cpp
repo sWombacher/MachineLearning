@@ -164,10 +164,11 @@ static std::vector<Point> readMarsFile(const char* filePath){
 
 int main(){
     const auto points = readMarsFile(FILE_PATH "Marsroboter-Weka.csv");
+    //const auto points = readMarsFile(FILE_PATH "Marsroboter-Weka_ordered.csv");
 
-    //std::vector<Point> centroids = { Point(10, 10), Point(50, 50), Point(80, 50) };
+    std::vector<Point> centroids = { Point(10, 10), Point(50, 50), Point(80, 50) };
     //std::vector<Point> centroids = { Point(10, 10), Point(20, 20), Point(30, 30) };
-    std::vector<Point> centroids = { Point(40, 50), Point(100, 50) };
+    //std::vector<Point> centroids = { Point(40, 50), Point(100, 50) };
 
 #ifdef CHAOS_LIB
     cf::WindowCoordinateSystem window(600, {0, 120}, {0, 120});

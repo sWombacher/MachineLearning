@@ -35,18 +35,17 @@ struct Interface{
     virtual double distance(const Point& instance, const Point& centroid) = 0;
     virtual Point centroid(const Point& oldCentroid, const std::vector<Point>& instances) = 0;
     virtual Point assign(const Point& instance, const std::vector<Point>& centroids) = 0;
-    virtual std::map<Point, std::vector<Point>> cluster
-            (const std::vector<Point>& instances, std::vector<Point> centroids) = 0;
+    virtual std::map<Point, std::vector<Point>> cluster(const std::vector<Point>& instances, std::vector<Point> centroids) = 0;
 };
 
 
 static void updateWindow(cf::WindowCoordinateSystem& window, const std::map<Point, std::vector<Point>>& grouped){
-    window.clear();
     const cf::Color colors[2*3] = {
         cf::Color::CYAN, cf::Color::BLUE,
         cf::Color::PINK, cf::Color::RED,
         cf::Color::GREY, cf::Color::BLACK
     };
+    window.clear();
 
     size_t colorIdx = 0;
     for (const auto& e : grouped){

@@ -3,17 +3,15 @@
 #endif
 
 #include <iostream>
-#include <sstream>
 #include <fstream>
 #include <string>
 #include <vector>
-#include <limits>
 #include <cmath>
 #include <map>
 
 struct Point{
-    int x, y;
-    Point(int X, int Y) : x(X), y(Y){}
+    int32_t x, y;
+    constexpr Point(int32_t X, int32_t Y) : x(X), y(Y){}
     double length() const { return std::sqrt(x * x + y * y); }
     Point operator-(const Point& rhs) const { return Point(x - rhs.x, y - rhs.y); }
     Point& operator+=(const Point& rhs) {
@@ -22,12 +20,9 @@ struct Point{
         return *this;
     }
     bool operator<(const Point& rhs) const{
-        if (x < rhs.x) return true;
-        if (x > rhs.x) return false;
-        return y < rhs.y;
+        return (int64_t(x) << 32) + int64_t(y) < (int64_t(rhs.x) << 32) + int64_t(rhs.y);
     }
-    bool operator==(const Point& rhs) const{ return x == rhs.x && y == rhs.y; }
-    bool operator!=(const Point& rhs) const{ return !(*this == rhs); }
+    bool operator!=(const Point& rhs) const{ return x != rhs.x || y != rhs.y; }
 };
 
 struct Interface{
@@ -38,9 +33,9 @@ struct Interface{
     virtual std::map<Point, std::vector<Point>> cluster(const std::vector<Point>& instances, std::vector<Point> centroids) = 0;
 };
 
-
+#ifdef CHAOS_LIB
 static void updateWindow(cf::WindowCoordinateSystem& window, const std::map<Point, std::vector<Point>>& grouped){
-    const cf::Color colors[2*3] = {
+    const cf::Color colors[] = {
         cf::Color::CYAN, cf::Color::BLUE,
         cf::Color::PINK, cf::Color::RED,
         cf::Color::GREY, cf::Color::BLACK
@@ -49,8 +44,8 @@ static void updateWindow(cf::WindowCoordinateSystem& window, const std::map<Poin
 
     size_t colorIdx = 0;
     for (const auto& e : grouped){
-        if (colorIdx > sizeof(colors))
-            throw std::runtime_error("Out of range exception");
+        if (colorIdx > sizeof(colors) / sizeof(colors[0]))
+            colorIdx = 0;
 
         // visualize point
         window.drawPoint(cf::Point(e.first.x, e.first.y), colors[colorIdx++], 3);
@@ -61,16 +56,14 @@ static void updateWindow(cf::WindowCoordinateSystem& window, const std::map<Poin
     window.show();
     window.waitKey();
 }
-
+#endif
 
 struct Cluster : public Interface{
 #ifdef CHAOS_LIB
     cf::WindowCoordinateSystem* m_Window;
     Cluster(cf::WindowCoordinateSystem* window = nullptr) : m_Window(window){}
 #endif
-
     ~Cluster() = default;
-
     double distance(const Point& instance, const Point& centroid) override { return (instance - centroid).length(); }
 
     virtual Point centroid(const Point& /*oldCentroid*/, const std::vector<Point>& instances) override{
@@ -82,7 +75,6 @@ struct Cluster : public Interface{
         mean.y /= instances.size();
         return mean;
     }
-
     virtual Point assign(const Point& instance, const std::vector<Point>& centroids) override{
         Point point(-1, -1);
         double dist = std::numeric_limits<double>::max();
@@ -97,7 +89,6 @@ struct Cluster : public Interface{
         return point;
     }
 
-
     virtual std::map<Point, std::vector<Point>>
     cluster(const std::vector<Point>& instances, std::vector<Point> centroids) override
     {
@@ -107,9 +98,8 @@ struct Cluster : public Interface{
             cluster[e] = std::vector<Point>();
 
         while (true){
-            CLUSTER newCluster;
-
             // assign
+            CLUSTER newCluster;
             for (const auto& e : instances)
                 cluster[assign(e, centroids)].push_back(e);
 
@@ -118,7 +108,6 @@ struct Cluster : public Interface{
             if (this->m_Window)
                 updateWindow(*this->m_Window, cluster);
 #endif
-
             // calculate mean
             bool changed = false;
             for (auto& e : centroids){
@@ -129,7 +118,6 @@ struct Cluster : public Interface{
                     changed = true;
                 }
             }
-
             // finished?
             if (!changed)
                 break;
@@ -140,7 +128,6 @@ struct Cluster : public Interface{
     }
 };
 
-
 static std::vector<Point> readMarsFile(const char* filePath){
     std::vector<Point> points;
     std::fstream file(filePath, std::fstream::in);
@@ -149,18 +136,12 @@ static std::vector<Point> readMarsFile(const char* filePath){
     // ignore first line
     std::getline(file, str);
     while (std::getline(file, str)){
-        Point p(-1, -1);
-        std::stringstream sstr(str);
-
-        std::getline(sstr, str, ',');
-        p.x = std::stoi(str);
-        std::getline(sstr, str);
-        p.y = std::stoi(str);
-        points.push_back(p);
+        int x, y;
+        sscanf(str.c_str(), "%d,%d", &x, &y);
+        points.emplace_back(x, y);
     }
     return points;
 }
-
 int main(){
     const auto points = readMarsFile(FILE_PATH "Marsroboter-Weka.csv");
     //const auto points = readMarsFile(FILE_PATH "Marsroboter-Weka_ordered.csv");
@@ -177,10 +158,9 @@ int main(){
     // visual output
     updateWindow(window, grouped);
 #else
-    Cluster cluster(&window);
+    Cluster cluster;
     auto grouped = cluster.cluster(points, centroids);
 #endif
-
     // text output
     std::cout << "Found centroids:\n\n";
     for (const auto& e : grouped){

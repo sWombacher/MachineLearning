@@ -1,9 +1,13 @@
 ﻿#ifdef CHAOS_LIB
 #include <windowCoordinateSystem.hpp>
 #endif
+#ifndef FILE_PATH
+#define FILE_PATH ""
+#endif
 
 #include <iostream>
 #include <fstream>
+#include <limits>
 #include <string>
 #include <vector>
 #include <cmath>
@@ -44,7 +48,7 @@ static void updateWindow(cf::WindowCoordinateSystem& window, const std::map<Poin
 
     size_t colorIdx = 0;
     for (const auto& e : grouped){
-        if (colorIdx > sizeof(colors) / sizeof(colors[0]))
+        if (colorIdx >= sizeof(colors) / sizeof(colors[0]))
             colorIdx = 0;
 
         // visualize point
@@ -66,7 +70,10 @@ struct Cluster : public Interface{
     ~Cluster() = default;
     double distance(const Point& instance, const Point& centroid) override { return (instance - centroid).length(); }
 
-    virtual Point centroid(const Point& /*oldCentroid*/, const std::vector<Point>& instances) override{
+    virtual Point centroid(const Point& oldCentroid, const std::vector<Point>& instances) override{
+        if (!instances.size())
+            return oldCentroid;
+
         Point mean(0, 0);
         for (const auto& point : instances)
             mean += point;
@@ -99,7 +106,6 @@ struct Cluster : public Interface{
 
         while (true){
             // assign
-            CLUSTER newCluster;
             for (const auto& e : instances)
                 cluster[assign(e, centroids)].push_back(e);
 
@@ -120,11 +126,10 @@ struct Cluster : public Interface{
             }
             // finished?
             if (!changed)
-                break;
+                return cluster;
 
             cluster.clear();
         }
-        return cluster;
     }
 };
 

@@ -21,12 +21,13 @@ struct Object{
     constexpr Object(float X, float Y, int ID = Object::UNDEFINED) : id(ID), x(X), y(Y) {}
     float length() const { return std::sqrt(x * x + y * y); }
     Object operator-(const Object& rhs) const { return Object(x - rhs.x, y - rhs.y); }
-    bool operator< (const Object& rhs) const { return id < rhs.id; }
 };
 
 static void updateWindow(cf::WindowCoordinateSystem& window, std::vector<Object>& grouped){
     window.clear();
-    std::sort(grouped.begin(), grouped.end());
+    std::sort(grouped.begin(), grouped.end(), [](const auto& lhs, const auto& rhs){
+        return lhs.id < rhs.id;
+    });
 
     int currentID = std::numeric_limits<int>::max();
     cf::Color color;
@@ -38,8 +39,6 @@ static void updateWindow(cf::WindowCoordinateSystem& window, std::vector<Object>
             currentID = e.id;
             std::cout << "New id: " << currentID << std::endl;
             color = cf::Color::RandomColor();
-            window.show();
-            window.waitKey();
         }
         window.drawPoint({e.x, e.y}, color);
         /*
@@ -97,17 +96,17 @@ private:
         std::vector<Object*> seeds = this->_getEpsilonDistanceObjets(objs, startObj);
         if (seeds.size() < this->m_MinPoints){
             startObj.id = Object::NOISE;
+            for (auto& e : seeds)
+                e->id = Object::NOISE;
             return false;
         }
-        for (size_t i = 0; i < seeds.size(); ++i){
+        for (size_t i = 0; i < seeds.size(); ++i)
             seeds[i]->id = clusterID;
-            if (seeds[i] == &startObj)
-                seeds.erase(seeds.begin() + long(i--));
-        }
+
         while(seeds.size()){
-            auto& seed = seeds[0];
-            if (seed->id == Object::UNDEFINED){
-                auto seeds_ofSeed = this->_getEpsilonDistanceObjets(objs, *seed);
+            auto& seed = *seeds[0];
+            if (seed.id == Object::UNDEFINED){
+                auto seeds_ofSeed = this->_getEpsilonDistanceObjets(objs, seed);
                 if (seeds_ofSeed.size() >= this->m_MinPoints){
                     // seed itself we be added again,
                     // we ignore this since it will be removed later on
@@ -194,9 +193,12 @@ std::pair<float, size_t> getEpsilonAndK(const std::vector<Object>& data){
 int main(){
     std::vector<Object> data = readFile(FILE_PATH "Fahrradkurier.csv");
     const auto epsilon_k = getEpsilonAndK(data);
-    cf::WindowCoordinateSystem window(800, {0.f, 1.f}, {0.5f, 1.f});
+
+    std::cout << "K: " << epsilon_k.second << "\nEpsilon: " << epsilon_k.first << std::endl;
     DBSCAN dbscan(epsilon_k.first, epsilon_k.second);
     dbscan(data);
+
+    cf::WindowCoordinateSystem window(800, {0.f, 1.f}, {0.5f, 1.f});
     updateWindow(window, data);
     return 0;
 }

@@ -15,3 +15,4 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/lib)
 
 add_subdirectory(lab1)
 add_subdirectory(lab2)
+add_subdirectory(lab3)

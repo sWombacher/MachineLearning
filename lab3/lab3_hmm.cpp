@@ -1,7 +1,6 @@
 #include <iostream>
 #include <iomanip>
 #include <vector>
-#include <array>
 
 struct Vec3 {
     union {
@@ -27,7 +26,7 @@ struct Vec3 {
         return *this;
     }
 };
-typedef std::array<std::array<float, 3>, 3> Mat3x3;
+typedef float Mat3x3[3][3];
 
 enum CHANGE { NO_CHANGE, GOAL_ENEMY, GOAL_DARMSTADT };
 enum NOISE { OLE, TOOR, OHHH };

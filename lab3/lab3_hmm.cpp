@@ -28,9 +28,9 @@ struct Vec3 {
 };
 typedef float Mat3x3[3][3];
 
-enum CHANGE { NO_CHANGE, GOAL_ENEMY, GOAL_DARMSTADT };
-enum NOISE { OLE, TOOR, OHHH };
-static std::vector<NOISE> noises = {OLE, OLE, OHHH, OLE, TOOR};
+enum CHANGE { NO_GOAL, GOAL_OP, GOAL_DA };
+enum NOISE { OLEE, TOOR, OHHH };
+static std::vector<NOISE> noises = {OLEE, OLEE, OHHH, OLEE, TOOR};
 static size_t current_noise_idx = 0;
 
 Vec3 hiddenMarcovModel(const Mat3x3& trans, const Mat3x3& sensor,
@@ -60,33 +60,33 @@ Vec3 hiddenMarcovModel(const Mat3x3& trans, const Mat3x3& sensor,
 
 int main() {
     Mat3x3 sensor;
-    sensor[NOISE::OLE][CHANGE::NO_CHANGE] = 0.8f;
-    sensor[NOISE::OLE][CHANGE::GOAL_ENEMY] = 0.1f;
-    sensor[NOISE::OLE][CHANGE::GOAL_DARMSTADT] = 0.1f;
-    sensor[NOISE::OHHH][CHANGE::NO_CHANGE] = 0.15f;
-    sensor[NOISE::OHHH][CHANGE::GOAL_ENEMY] = 0.7f;
-    sensor[NOISE::OHHH][CHANGE::GOAL_DARMSTADT] = 0.1f;
-    sensor[NOISE::TOOR][CHANGE::NO_CHANGE] = 0.05f;
-    sensor[NOISE::TOOR][CHANGE::GOAL_ENEMY] = 0.2f;
-    sensor[NOISE::TOOR][CHANGE::GOAL_DARMSTADT] = 0.8f;
+    sensor[NOISE::OLEE][CHANGE::NO_GOAL] = 0.80f;
+    sensor[NOISE::OLEE][CHANGE::GOAL_OP] = 0.10f;
+    sensor[NOISE::OLEE][CHANGE::GOAL_DA] = 0.10f;
+    sensor[NOISE::OHHH][CHANGE::NO_GOAL] = 0.15f;
+    sensor[NOISE::OHHH][CHANGE::GOAL_OP] = 0.70f;
+    sensor[NOISE::OHHH][CHANGE::GOAL_DA] = 0.10f;
+    sensor[NOISE::TOOR][CHANGE::NO_GOAL] = 0.05f;
+    sensor[NOISE::TOOR][CHANGE::GOAL_OP] = 0.20f;
+    sensor[NOISE::TOOR][CHANGE::GOAL_DA] = 0.80f;
 
     Mat3x3 trans;
-    trans[CHANGE::NO_CHANGE][CHANGE::NO_CHANGE] = 0.6f;
-    trans[CHANGE::NO_CHANGE][CHANGE::GOAL_ENEMY] = 0.2f;
-    trans[CHANGE::NO_CHANGE][CHANGE::GOAL_DARMSTADT] = 0.2f;
-    trans[CHANGE::GOAL_ENEMY][CHANGE::NO_CHANGE] = 0.4f;
-    trans[CHANGE::GOAL_ENEMY][CHANGE::GOAL_ENEMY] = 0.3f;
-    trans[CHANGE::GOAL_ENEMY][CHANGE::GOAL_DARMSTADT] = 0.3f;
-    trans[CHANGE::GOAL_DARMSTADT][CHANGE::NO_CHANGE] = 0.4f;
-    trans[CHANGE::GOAL_DARMSTADT][CHANGE::GOAL_ENEMY] = 0.4f;
-    trans[CHANGE::GOAL_DARMSTADT][CHANGE::GOAL_DARMSTADT] = 0.2f;
+    trans[CHANGE::NO_GOAL][CHANGE::NO_GOAL] = 0.6f;
+    trans[CHANGE::NO_GOAL][CHANGE::GOAL_OP] = 0.2f;
+    trans[CHANGE::NO_GOAL][CHANGE::GOAL_DA] = 0.2f;
+    trans[CHANGE::GOAL_OP][CHANGE::NO_GOAL] = 0.4f;
+    trans[CHANGE::GOAL_OP][CHANGE::GOAL_OP] = 0.3f;
+    trans[CHANGE::GOAL_OP][CHANGE::GOAL_DA] = 0.3f;
+    trans[CHANGE::GOAL_DA][CHANGE::NO_GOAL] = 0.4f;
+    trans[CHANGE::GOAL_DA][CHANGE::GOAL_OP] = 0.4f;
+    trans[CHANGE::GOAL_DA][CHANGE::GOAL_DA] = 0.2f;
 
     std::cout << std::setprecision(3);
     Vec3 vec = hiddenMarcovModel(trans, sensor);
-    std::cout << "Probability no change: " << vec[CHANGE::NO_CHANGE] << '\n'
-              << "Probability goal darm: " << vec[CHANGE::GOAL_DARMSTADT]
+    std::cout << "Probability no change: " << vec[CHANGE::NO_GOAL] << '\n'
+              << "Probability goal darm: " << vec[CHANGE::GOAL_DA]
               << '\n'
-              << "Probability goal enem: " << vec[CHANGE::GOAL_ENEMY] << '\n'
+              << "Probability goal enem: " << vec[CHANGE::GOAL_OP] << '\n'
               << std::endl;
     return 0;
 }

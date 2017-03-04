@@ -34,10 +34,11 @@ static std::vector<NOISE> noises = {OLEE, OLEE, OHHH, OLEE, TOOR};
 static size_t current_noise_idx = 0;
 
 Vec3 hiddenMarcovModel(const Mat3x3& trans, const Mat3x3& sensor,
-                       Vec3 probabilities = {1.f / 3.f, 1.f / 3.f, 1.f / 3.f}) {
+                       Vec3 probabilities = {1.f / 3.f, 1.f / 3.f, 1.f / 3.f})
+{
+    std::cout << "Time point: " << current_noise_idx + 1 << std::endl;
     Vec3 newProb(0, 0, 0);
     for (size_t i = 0; i < 3; ++i) {
-        std::cout << "Calculation " << i << ":\n(";
         for (size_t iter = 0; iter < 3; ++iter) {
             newProb[i] += probabilities[iter] * trans[iter][i];
             std::cout << probabilities[iter] << " * " << trans[iter][i]
@@ -45,7 +46,6 @@ Vec3 hiddenMarcovModel(const Mat3x3& trans, const Mat3x3& sensor,
         }
         newProb[i] *= sensor[noises[current_noise_idx]][i];
         std::cout << "\b\b\b) * " << sensor[noises[current_noise_idx]][i]
-                  << '\n'
                   << std::endl;
     }
     newProb *= 1.f / (newProb.x + newProb.y + newProb.z);
@@ -63,12 +63,12 @@ int main() {
     sensor[NOISE::OLEE][CHANGE::NO_GOAL] = 0.80f;
     sensor[NOISE::OLEE][CHANGE::GOAL_OP] = 0.10f;
     sensor[NOISE::OLEE][CHANGE::GOAL_DA] = 0.10f;
-    sensor[NOISE::OHHH][CHANGE::NO_GOAL] = 0.15f;
-    sensor[NOISE::OHHH][CHANGE::GOAL_OP] = 0.70f;
-    sensor[NOISE::OHHH][CHANGE::GOAL_DA] = 0.10f;
     sensor[NOISE::TOOR][CHANGE::NO_GOAL] = 0.05f;
     sensor[NOISE::TOOR][CHANGE::GOAL_OP] = 0.20f;
     sensor[NOISE::TOOR][CHANGE::GOAL_DA] = 0.80f;
+    sensor[NOISE::OHHH][CHANGE::NO_GOAL] = 0.15f;
+    sensor[NOISE::OHHH][CHANGE::GOAL_OP] = 0.70f;
+    sensor[NOISE::OHHH][CHANGE::GOAL_DA] = 0.10f;
 
     Mat3x3 trans;
     trans[CHANGE::NO_GOAL][CHANGE::NO_GOAL] = 0.6f;
@@ -78,7 +78,7 @@ int main() {
     trans[CHANGE::GOAL_OP][CHANGE::GOAL_OP] = 0.3f;
     trans[CHANGE::GOAL_OP][CHANGE::GOAL_DA] = 0.3f;
     trans[CHANGE::GOAL_DA][CHANGE::NO_GOAL] = 0.4f;
-    trans[CHANGE::GOAL_DA][CHANGE::GOAL_OP] = 0.4f;
+    trans[CHANGE::GOAL_DA][CHANGE::GOAL_OP] = 0.2f;
     trans[CHANGE::GOAL_DA][CHANGE::GOAL_DA] = 0.2f;
 
     std::cout << std::setprecision(3);

@@ -1,6 +1,7 @@
 add_definitions(-DFILE_PATH="${CMAKE_CURRENT_LIST_DIR}/")
 add_definitions(-DCHAOS_LIB)
 add_executable(lab3_naiveBayes lab3_naiveBayes.cpp)
+add_executable(lab3_hmm lab3_hmm.cpp)
 
 
 find_package(OpenCV REQUIRED)

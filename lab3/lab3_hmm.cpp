@@ -39,6 +39,7 @@ Vec3 hiddenMarcovModel(const Mat3x3& trans, const Mat3x3& sensor,
     std::cout << "Time point: " << current_noise_idx + 1 << std::endl;
     Vec3 newProb(0, 0, 0);
     for (size_t i = 0; i < 3; ++i) {
+        std::cout << '(';
         for (size_t iter = 0; iter < 3; ++iter) {
             newProb[i] += probabilities[iter] * trans[iter][i];
             std::cout << probabilities[iter] << " * " << trans[iter][i]

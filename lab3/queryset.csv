@@ -1,0 +1,4 @@
+Domain, Trainingsetsize, Noise
+continious, high, high
+discrete, high, none
+continious, high, low

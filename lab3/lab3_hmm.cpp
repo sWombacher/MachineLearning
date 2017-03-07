@@ -62,7 +62,7 @@ int main() {
     Mat3x3 trans;
     trans[CHANGE::NO_GOAL][CHANGE::NO_GOAL] = 0.6f; trans[CHANGE::NO_GOAL][CHANGE::GOAL_OP] = 0.2f; trans[CHANGE::NO_GOAL][CHANGE::GOAL_DA] = 0.2f;
     trans[CHANGE::GOAL_OP][CHANGE::NO_GOAL] = 0.4f; trans[CHANGE::GOAL_OP][CHANGE::GOAL_OP] = 0.3f; trans[CHANGE::GOAL_OP][CHANGE::GOAL_DA] = 0.3f;
-    trans[CHANGE::GOAL_DA][CHANGE::NO_GOAL] = 0.4f; trans[CHANGE::GOAL_DA][CHANGE::GOAL_OP] = 0.2f; trans[CHANGE::GOAL_DA][CHANGE::GOAL_DA] = 0.2f;
+    trans[CHANGE::GOAL_DA][CHANGE::NO_GOAL] = 0.4f; trans[CHANGE::GOAL_DA][CHANGE::GOAL_OP] = 0.4f; trans[CHANGE::GOAL_DA][CHANGE::GOAL_DA] = 0.2f;
 
     std::cout << std::setprecision(3);
     Vec3 vec = hiddenMarcovModel(trans, sensor, {1.f/3.f, 1.f/3.f, 1.f/3.f});

@@ -1,9 +1,13 @@
+#ifdef CHAOS_LIB
 #include "windowCoordinateSystem.hpp"
+#endif
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <vector>
 #include <array>
+#include <tuple>
 
 
 typedef std::array<std::array<float, 12>, 9> Mat9x12;
@@ -261,8 +265,8 @@ std::pair<float, float> getRegressionLine(const Mat9x12& data){
 }
 
 int main(){
-    //const auto data = getMatrix();
-    const auto data = readDataSet(FILE_PATH "regression_dataset.csv");
+    const auto data = getMatrix();
+    //const auto data = readDataSet(FILE_PATH "regression_dataset.csv");
     const auto line = getRegressionLine(data);
     std::cout << "Found line:\ny = " << line.first << "x + " << line.second << std::endl;
 
@@ -270,8 +274,8 @@ int main(){
     for (size_t month = 0; month < data[0].size(); ++month){
     for (size_t year  = 0; year  < data   .size(); ++year ){
         const size_t idx = year * Month::NUM_MONTHS + month;
-        x[idx] = idx;
         y[idx] = data[year][month];
+        x[idx] = idx;
     }
     }
 
@@ -281,6 +285,7 @@ int main(){
               << std::get<1>(parabola) << "x + "
               << std::get<2>(parabola) << std::endl;
 
+#ifdef CHAOS_LIB
     cf::WindowCoordinateSystem system(400, {-1.f, float(Year::NUM_YEARS * Month::NUM_MONTHS)}, {-1.f, 150.f});
     auto draw = [&line, &parabola, &system, &data](){
         system.drawAxis(cf::Color::RED, 100.f, 100.f);
@@ -311,6 +316,7 @@ int main(){
     system.clear();
     system.setInterval({-1.f, float(Year::NUM_YEARS * Month::NUM_MONTHS)}, {95.f, 150.f}, 1280);
     draw();
+#endif
     return 0;
 }
 
